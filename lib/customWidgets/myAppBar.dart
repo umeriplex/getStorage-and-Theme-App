@@ -47,3 +47,29 @@ import '../views/theme/services.dart';
     ],
   );
 }
+
+  AppBar buildAppBar2(Function()? onTap,String? title,BuildContext context) {
+  return AppBar(
+    elevation: 0,
+    backgroundColor: context.theme.backgroundColor,
+    title: Text(title!),
+    leading: GestureDetector(
+      onTap: onTap,
+      child: Icon(
+        Icons.arrow_back_ios_new_rounded,
+        size: 20,
+        color: Get.isDarkMode ? Colors.white : Colors.black,
+      )
+    ),
+    actions: [
+      GestureDetector(
+        onTap: (){},
+        child: const CircleAvatar(
+          radius: 17,
+          backgroundImage: AssetImage("images/st.png"),
+        ),
+      ),
+      const SizedBox(width: 10,),
+    ],
+  );
+}

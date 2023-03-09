@@ -8,6 +8,7 @@ import 'package:local_storage_app_theme/views/theme/theme.dart';
 import '../customWidgets/button.dart';
 import '../customWidgets/myAppBar.dart';
 import '../notification/notificationServices.dart';
+import 'addTaskView.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -32,6 +33,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
+      backgroundColor: context.theme.backgroundColor,
       appBar: buildAppBar(() {
           ThemeServices().switchTheme();
           notifyHelper.displayNotification(title: "Notification Theme Changed", body:Get.isDarkMode ? "Light Mode Activated" : "Dark Mode Activated");
@@ -84,7 +86,9 @@ class _HomeViewState extends State<HomeView> {
                 ]
               ),
               MyButton(
-                onTap: (){},
+                onTap: (){
+                  Get.to(const AddTaskView());
+                },
                 text: "+ Add Task",
               ),
             ],
