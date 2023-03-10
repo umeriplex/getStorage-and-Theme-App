@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:local_storage_app_theme/modals/task.dart';
 import 'package:local_storage_app_theme/views/theme/theme.dart';
 
+import '../controllers/tasksController.dart';
 import '../customWidgets/button.dart';
 import '../customWidgets/inputFields.dart';
 import '../customWidgets/myAppBar.dart';
@@ -21,7 +23,7 @@ class _AddTaskViewState extends State<AddTaskView> {
   String _startTime = DateFormat("hh:mm a").format(DateTime.now()).toString();
 
   List<int> reminderList = [5,10,15,20,25,30,35,40,45,50,55,60];
-  int _selectedItem = 5;
+  int _selectedRemindItem = 5;
 
 
   List<String> repeatList = ["none","daily"];
@@ -32,7 +34,7 @@ class _AddTaskViewState extends State<AddTaskView> {
   TextEditingController _titleController = TextEditingController();
   TextEditingController _noteController = TextEditingController();
 
-
+  final TasksController _tasksController = Get.put(TasksController());
 
 
   @override
@@ -101,7 +103,7 @@ class _AddTaskViewState extends State<AddTaskView> {
               20.ph,
               InputFields(
                 title: "Reminder",
-                hint: "$_selectedItem minutes early",
+                hint: "$_selectedRemindItem minutes early",
                 widget: DropdownButton(
                   icon: const Icon(Icons.keyboard_arrow_down_rounded,color: Colors.grey,),
                   iconSize: 32,
@@ -111,12 +113,12 @@ class _AddTaskViewState extends State<AddTaskView> {
                   items: reminderList.map<DropdownMenuItem<String>>((int value){
                     return DropdownMenuItem<String>(
                       value: value.toString(),
-                      child: Text(value.toString()),
+                      child: Text(value.toString(),style: TextStyle(color: Get.isDarkMode ? Colors.white54 : Colors.black54),),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
                     setState(() {
-                      _selectedItem = int.parse(newValue!);
+                      _selectedRemindItem = int.parse(newValue!);
                     });
                   },
                 ),
@@ -125,7 +127,7 @@ class _AddTaskViewState extends State<AddTaskView> {
               20.ph,
               InputFields(
                 title: "Repeat",
-                hint: "$_selectedRepeatItem",
+                hint: _selectedRepeatItem,
                 widget: DropdownButton(
                   icon: const Icon(Icons.keyboard_arrow_down_rounded,color: Colors.grey,),
                   iconSize: 32,
@@ -135,7 +137,7 @@ class _AddTaskViewState extends State<AddTaskView> {
                   items: repeatList.map<DropdownMenuItem<String>>((String value){
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value),
+                      child: Text(value,style: TextStyle(color: Get.isDarkMode ? Colors.white54 : Colors.black54),),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
@@ -164,9 +166,16 @@ class _AddTaskViewState extends State<AddTaskView> {
     );
   }
 
+
+
+
+
+
+
+
   _validationData(){
     if(_titleController.text.isNotEmpty && _noteController.text.isNotEmpty){
-      Get.back();
+      _addTaskToDB();
     }else if(_titleController.text.isEmpty || _noteController.text.isEmpty){
     Get.snackbar(
         "Required Fields",
@@ -180,7 +189,6 @@ class _AddTaskViewState extends State<AddTaskView> {
     );
     }
   }
-
 
   Column colorPallet() {
     return Column(
@@ -257,4 +265,23 @@ class _AddTaskViewState extends State<AddTaskView> {
       ),
     );
   }
+
+  _addTaskToDB() async {
+    int value = await _tasksController.addTask(tasks:Tasks(
+            title: _titleController.text,
+            note: _noteController.text,
+            date: DateFormat.yMd().format(_selectedDate),
+            startTime: _startTime,
+            endTime: _endTime,
+            remind: _selectedRemindItem,
+            repeat: _selectedRepeatItem,
+            color: selectedColor,
+            isCompleted: 0
+        ));
+    print("RETURN ID AFTER INSERT: $value");
+    // delay for 1 second
+    await Future.delayed(const Duration(seconds: 1));
+    Get.back();
+  }
+
 }
