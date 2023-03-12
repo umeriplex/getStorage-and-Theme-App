@@ -41,8 +41,8 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: context.theme.backgroundColor,
       appBar: buildAppBar(() {
           ThemeServices().switchTheme();
-          notifyHelper.displayNotification(title: "Notification Theme Changed", body:Get.isDarkMode ? "Light Mode Activated" : "Dark Mode Activated");
-          notifyHelper.scheduledNotification();
+          //notifyHelper.displayNotification(title: "Notification Theme Changed", body:Get.isDarkMode ? "Light Mode Activated" : "Dark Mode Activated");
+          //notifyHelper.scheduledNotification();
           setState(() {});
         },
         "Home View",
@@ -64,24 +64,64 @@ class _HomeViewState extends State<HomeView> {
               return ListView.builder(
                   itemCount: _tasksController.tasksList.length,
                   itemBuilder: (context,index){
-                    print(".::TASKS LIST LENGTH::. ${_tasksController.tasksList.length}");
-                    return AnimationConfiguration.staggeredList(
+
+
+                    Tasks task = _tasksController.tasksList[index];
+                    //print(task.toJson());
+
+                    if(task.date == DateFormat.yMd().format(_selectedDate)){
+                      print(task.toJson());
+                      DateTime date = DateFormat.jm().parse(task.startTime.toString());
+                      var myTime = DateFormat("hh:mm").format(date);
+                      print("MY TIME ::. "+myTime);
+                      notifyHelper.scheduledNotification(
+                      int.parse(myTime.split(":")[0].toString()),
+                      int.parse(myTime.split(":")[1].toString()),
+                      task
+                      );
+                      return AnimationConfiguration.staggeredList(
                         position: index,
                         child: SlideAnimation(
                           child: FadeInAnimation(
                             child:  Row(
                               children: [
                                 GestureDetector(
-                                  onTap: (){
-                                    _showBottomSheet(context,_tasksController.tasksList[index]);
+                                    onTap: (){
+                                      _showBottomSheet(context,task);
                                     },
-                                  child : TaskTile(_tasksController.tasksList[index],)
+                                    child : TaskTile(task)
                                 ),
                               ],
                             ),
                           ),
                         ),
-                    );
+                      );
+                    }
+                    else if(task.repeat == "daily"){
+                      return AnimationConfiguration.staggeredList(
+                        position: index,
+                        child: SlideAnimation(
+                          child: FadeInAnimation(
+                            child:  Row(
+                              children: [
+                                GestureDetector(
+                                    onTap: (){
+                                      _showBottomSheet(context,task);
+                                    },
+                                    child : TaskTile(task)
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    else{
+                      return Container();
+                    }
+
+
+
                   }
               );
             }),
@@ -102,7 +142,9 @@ class _HomeViewState extends State<HomeView> {
             dayTextStyle: smallTextStyle,
             monthTextStyle: smallTextStyle,
             onDateChange: (date){
-              _selectedDate = date;
+              setState(() {
+                _selectedDate = date;
+              });
             },
           ),
         );

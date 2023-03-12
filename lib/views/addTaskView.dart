@@ -226,7 +226,7 @@ class _AddTaskViewState extends State<AddTaskView> {
         context: context,
         initialDate: DateTime.now(),
         firstDate: DateTime(2000),
-        lastDate: DateTime.now(),
+        lastDate: DateTime(2050),
     );
     if(_pickDate != null){
       setState(() {
@@ -238,7 +238,7 @@ class _AddTaskViewState extends State<AddTaskView> {
 
   _getTimeFromUser({required bool isStartTime}) async {
     var pickedTime = await _showTimePicker();
-    String _formatedTime = pickedTime.format(context);
+    String _formatedTime = pickedTime.format(context).toString();
 
     if(pickedTime == null){
       debugPrint("Canceled");

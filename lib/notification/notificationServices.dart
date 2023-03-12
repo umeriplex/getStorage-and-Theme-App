@@ -2,16 +2,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:get/get.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+import '../modals/task.dart';
 
 class NotifyHelper{
   FlutterLocalNotificationsPlugin
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin(); //
 
   initializeNotification() async {
-    tz.initializeTimeZones();
+    _configureLocalTimeZone();
     final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
         requestSoundPermission: false,
         requestBadgePermission: false,
@@ -87,22 +90,46 @@ class NotifyHelper{
     );
   }
 
-  scheduledNotification() async {
+  scheduledNotification(int hour,  int mint, Tasks tasks) async {
     await flutterLocalNotificationsPlugin.zonedSchedule(
-        0,
-        'scheduled title',
-        'theme changes 5 seconds ago',
-        tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
+        tasks.id!.toInt(),
+        tasks.title.toString(),
+        tasks.note.toString(),
+        _convertTime(hour,mint),
+        payload: 'Default_Sound',
         const NotificationDetails(
             android: AndroidNotificationDetails(
               'your channel id',
               'your channel name',
               channelDescription: 'your channel description',
+              color: Colors.blue,
+              playSound: true,
+              sound: RawResourceAndroidNotificationSound("notification_sound"),
             )),
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime);
+        UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time
+    );
 
   }
+  // 2023-03-12 18:22:34.264621Z
+  tz.TZDateTime _convertTime(int hour, int mint){
+    print("HOUR ::. $hour MINT ::. $mint");
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduleDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, mint);
+    if (scheduleDate.isBefore(now)) {
+      scheduleDate = scheduleDate.add(const Duration(days: 1));
+    }
+    print("$now NOW NOW");
+    print("$scheduleDate SCHEDULE SCHEDULE");
+    return scheduleDate;
+  }
 
+  Future<void> _configureLocalTimeZone() async {
+    tz.initializeTimeZones();
+    final String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
+    print("TIME ZONE ::. $timeZoneName");
+  }
 }
